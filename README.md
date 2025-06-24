@@ -1,170 +1,124 @@
-# Modelling Spatial Risk for Suicides by LSOA in Cornwall County
+# NYC Evictions and 311 Calls Prediction Model
 
-A Bayesian spatial risk assessment using Intrinsic Conditional Autoregressive (ICAR) modeling to analyze suicide risk patterns across Lower Layer Super Output Areas (LSOAs) in Cornwall, England.
+A machine learning project analyzing the predictive power of NYC 311 Housing Complaint calls for eviction counts in Manhattan, incorporating socio-economic and housing-related factors.
 
 ## Project Overview
 
-This project investigates the spatial variation in suicide risk across Cornwall County using a Zero-Inflated Negative Binomial (ZINB) model with spatial random effects. Cornwall presents a unique case study as it recorded the second-highest suicide counts in 2022 despite being only the 40th most populous county in England.
+This study evaluates whether 311 housing complaint calls can serve as effective predictors for evictions in Manhattan, using machine learning models trained on demographic, economic, and housing data from 2023.
 
-## Research Objectives
-
-- Analyze spatial patterns of suicide risk at the LSOA level in Cornwall
-- Investigate the relationship between area-level deprivation and suicide incidence
-- Account for spatial autocorrelation and overdispersion in sparse count data
-- Identify areas with elevated suicide risk for potential public health intervention
-
-## Data Sources
-
-### Outcome Variable
-- **Suicide Counts (2023)**: Number of registered suicides per LSOA
-  - Source: Office for National Statistics (ONS)
-  - Geographic Unit: 336 LSOAs in Cornwall County
-  - Average population per LSOA: ~1,500 people
-
-### Covariates
-- **Index of Multiple Deprivation (IMD) 2019**: Composite deprivation measure across seven domains
-  - Source: Ministry of Housing, Communities and Local Government
-  - Domains: Income, employment, health, education, crime, housing, environment
-
-- **Small Area Mental Health Index (SAMHI)**: Composite annual mental health measure
-  - Source: SAMHI dataset
-  - Components: NHS mental health attendances, antidepressant prescriptions, QOF depression data, DWP mental health benefit claims
-
-## Methodology
-
-### Model Selection
-Two modeling approaches were compared using Leave-One-Out (LOO) cross-validation:
-1. Negative Binomial with ICAR spatial effects
-2. **Zero-Inflated Negative Binomial (ZINB) with ICAR spatial effects** *(selected model)*
-
-### Model Specification
-
-The final ZINB-ICAR model addresses:
-- **Excess zeros**: High proportion of LSOAs with zero suicide counts
-- **Overdispersion**: Variance exceeding that expected under Poisson distribution
-- **Spatial autocorrelation**: Dependence between neighboring areas
-
-**Model Structure:**
-```
-ϕ ~ ICAR(N, node1, node2)
-Y ~ Negative Binomial(log(E) + α + β_imd*X + β_samhi*L + σ*ϕ)
-
-Priors:
-α ~ Normal(0.0, 1.0)
-β_imd ~ Normal(0.0, 1.0)
-β_samhi ~ Normal(0.0, 1.0)
-σ ~ Normal(0.0, 1.0)
-Sum(ϕ) ~ Normal(0.0, 0.001*N)
-```
+### Research Questions
+- Can we properly train a model using 311 calls about housing and other studied predictors of eviction?
+- Are 311 calls about housing conditions a good indicator for evictions in Manhattan?
 
 ## Key Findings
 
-### Model Parameters
-| Parameter | Mean | 95% CI | Interpretation |
-|-----------|------|--------|----------------|
-| α (Baseline) | -1.38 | (-2.83, -0.06) | Generally low suicide counts |
-| β_imd (Deprivation) | 0.52 | (-0.52, 1.50) | Positive but non-significant association |
-| β_samhi (Mental Health) | -0.30 | (-1.40, 0.79) | Negative but non-significant association |
-| σ (Spatial variation) | 1.88 | (1.20, 2.62) | Significant spatial overdispersion |
-| φ_nb (Zero-inflation) | 18.25 | (0.63, 53.96) | High proportion of zero counts |
+- **Random Forest model** achieved the best performance with RMSE of 4.51
+- **311 housing complaints** showed high importance (0.78) in the Random Forest model
+- All models significantly outperformed baseline predictions
+- Study focused on 312 Manhattan census tracts with residential rental units
 
-### Spatial Results
-- **No LSOAs** showed statistically significant deviations in suicide risk
-- Substantial variation in point estimates suggests potential spatial heterogeneity
-- ICAR spatial smoothing may have attenuated extreme local values
+## Methodology
 
-## Technical Requirements
+### Models Implemented
+1. **Tweedie Regression** - Handles overdispersion in count data
+2. **Random Forest** - Captures complex non-linear relationships
+3. **Baseline Models** - Naive (intercept-only) and Poisson regression for comparison
 
-### Software Dependencies
-- **Stan**: Bayesian modeling framework
-- **R**: Statistical computing environment
-- Required R packages:
-  - `rstan` or `cmdstanr`
-  - `loo` (model comparison)
-  - `sf` (spatial data handling)
-  - `ggplot2` (visualization)
-  - `bayesplot` (Bayesian diagnostics)
+### Performance Metrics
+| Model | RMSE | MSE | MAE | AIC |
+|-------|------|-----|-----|-----|
+| Random Forest | 4.51 | 21.25 | 3.32 | 223.12 |
+| Tweedie | 5.38 | 32.15 | 3.64 | 1415.59 |
+| Poisson | 5.24 | 29.72 | 3.71 | 1622.08 |
+| Naive | 7.22 | 52.11 | 5.35 | 1951.08 |
 
-### Data Format
-- LSOA boundary files (shapefile format)
-- Suicide count data (CSV format)
-- IMD scores by LSOA
-- SAMHI scores by LSOA
-- Spatial adjacency matrix for ICAR model
+## Data Sources
 
-## File Structure
-```
-project/
-├── data/
-│   ├── suicide_counts_2023.csv
-│   ├── imd_2019_lsoa.csv
-│   ├── samhi_lsoa.csv
-│   └── cornwall_lsoa_boundaries.shp
-├── models/
-│   ├── zinb_icar_model.stan
-│   └── nb_icar_model.stan
-├── scripts/
-│   ├── data_preparation.R
-│   ├── model_fitting.R
-│   ├── model_comparison.R
-│   └── results_visualization.R
-├── outputs/
-│   ├── relative_risk_map.png
-│   ├── significance_map.png
-│   └── exceedance_probability_map.png
-└── README.md
-```
+### Primary Datasets
+- **NYC 311 Housing Complaints** (NYC Open Data)
+- **Eviction Records** (NYC Open Data)
+- **Demographics & Socioeconomics** (American Community Survey 5-year estimates)
+- **Vacancy Rates** (Decennial Census Survey)
+- **Geographic Boundaries** (US Census Bureau)
+- **Housing Distribution** (NYC Pluto dataset)
 
-## Results Interpretation
+### Key Variables
+- **Target Variable**: Eviction counts per census tract
+- **Primary Predictor**: 311 housing complaint calls
+- **Control Variables**: 
+  - Race/ethnicity demographics
+  - Household income and poverty rates
+  - Rent burden (contract rent)
+  - Housing availability (total & vacant units)
 
-### Public Health Implications
-- **Rarity Effect**: Small-area suicide data naturally leads to high uncertainty
-- **Surveillance Priority**: Areas with elevated (though non-significant) risk estimates may warrant monitoring
-- **Model Limitations**: Statistical significance ≠ practical significance for public health
+## Temporal Scope
 
-### Model Performance
-- Successfully handles excess zeros and overdispersion
-- ICAR component provides spatial smoothing while preserving local patterns
-- Zero-inflation parameter indicates model appropriately captures data structure
+**Focus Year: 2023**
+- First post-COVID year showing data stabilization
+- Post-Housing Stability and Tenant Protection Act (2019)
+- Avoids COVID-19 eviction moratorium complications
 
-## Future Improvements
+## Data Processing
 
-### Data Enhancement
-- Aggregate over longer time periods for increased statistical power
-- Include additional covariates (substance abuse rates, healthcare accessibility)
-- Incorporate temporal trends
+### Geographic Unit
+- **Census Tracts** used to avoid inaccuracies of smaller block units
+- Manhattan-specific analysis (312 residential census tracts)
+- Point data (evictions, 311 calls) aggregated within census tracts using QGIS
 
-### Methodological Extensions
-- **BYM2 Model**: More flexible spatial correlation structure
-- **Hybrid Approaches**: Combine spatial smoothing with machine learning
-- **Temporal Extensions**: Space-time modeling for trend analysis
+### Data Cleaning
+- Removed census tracts without residential zoning
+- Addressed multicollinearity using Variance Inflation Factor (VIF < 10)
+- Handled overdispersion in eviction count data (variance: 52.29, mean: 7.04)
+
+## Technical Implementation
+
+### Libraries Used
+- `statsmodels` - Tweedie regression
+- `scikit-learn` - Random Forest, GridSearchCV
+- `QGIS` - Spatial data aggregation
+
+### Model Optimization
+- **Random Forest**: GridSearchCV with 10-fold cross-validation
+- **Hyperparameter Tuning**: Minimized Mean Squared Error (MSE)
+- **Validation**: Learning curves to minimize overfitting
+
+## Results & Implications
+
+### Feature Importance
+- **311 Housing Calls**: High importance in Random Forest (0.78)
+- **Median Income**: Significant predictor across all models
+- **Housing Availability**: Key factor in eviction risk
+
+### Interpretation Considerations
+High 311 call volumes may indicate:
+- Genuine housing problems increasing eviction risk
+- Increased awareness and reporting behavior
+- Limited access to alternative resources for housing concerns
 
 ## Limitations
 
-1. **Data Sparsity**: Single-year data limits statistical power
-2. **Disclosure Controls**: May affect data completeness
-3. **Spatial Scale**: LSOA level may not capture all relevant spatial processes
-4. **Causal Inference**: Associations do not imply causation
+1. **Spatial Accuracy**: Poor geocoding required census tract aggregation instead of precise point analysis
+2. **Model Performance**: All models leave room for accuracy improvements
+3. **Causation vs Correlation**: High 311 calls may reflect reporting behavior rather than housing quality
 
-## Citation
+## Future Research
 
-If using this methodology or findings, please cite:
-```
-[Author Name]. (2024). Modelling Spatial Risk for Suicides by LSOA in Cornwall County. 
-UCL Department of Geography, Advanced Topics in Social & Geographic Data Sciences.
-```
+- Refine geocoding for more granular spatial analysis
+- Expand to other NYC boroughs
+- Incorporate temporal dynamics
+- Explore additional housing quality indicators
+- Develop real-time eviction risk monitoring system
 
-## Data Ethics and Privacy
+## Academic Context
 
-This project uses aggregated, anonymized data in compliance with ONS disclosure controls. Individual-level data is never accessed or reported. All analysis follows ethical guidelines for suicide research and public health surveillance.
+This project was completed as part of GEOG0115: Social Data Science at UCL Department of Geography (2024-25). The research contributes to understanding housing instability prediction and the utility of citizen-reported data (311 calls) in urban policy applications.
 
-## Contact
+## Policy Relevance
 
-For questions about methodology or data access, please refer to the original data sources:
-- ONS: https://www.ons.gov.uk/
-- SAMHI: https://pldr.org/dataset/2noyv/small-area-mental-health-index-samhi
-- IMD: Ministry of Housing, Communities and Local Government
+Findings support the potential use of 311 housing complaint data for:
+- Early identification of eviction-risk areas
+- Targeted intervention programs
+- Resource allocation for housing assistance
+- Proactive tenant protection measures
 
 ---
-
-**Disclaimer**: This research is for academic purposes. Clinical or policy decisions should not be based solely on these findings without appropriate professional consultation.
