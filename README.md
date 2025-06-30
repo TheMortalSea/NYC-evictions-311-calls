@@ -1,7 +1,9 @@
 # NYC Evictions and 311 Calls Prediction Model
 
-![NYC Evictions](assets/NYCevictions.png.png)
-![NYC 311 calls](assets/NYC311%20Calls.png)
+<div style="display: flex; justify-content: space-between;">
+  <img src="assets/NYCevictions.png" alt="NYC Evictions" style="width: 48%;">
+  <img src="assets/NYC311%20Calls.png" alt="NYC 311 calls" style="width: 48%;">
+</div>
 
 A machine learning project analyzing the predictive power of NYC 311 Housing Complaint calls for eviction counts in Manhattan, incorporating socio-economic and housing-related factors.
 
